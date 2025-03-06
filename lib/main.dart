@@ -323,14 +323,14 @@ class _AddCardScreenState extends State<AddCardScreen> {
 }
 
 // 6. CardForm - Form to enter card details
-class CardForm extends StatefulWidget {  // Changed to StatefulWidget
+class CardForm extends StatefulWidget {
   final VoidCallback onSubmit;
-  final Function(String) onNameChanged;  // Added callback for name
+  final Function(String) onNameChanged;
 
   const CardForm({
     Key? key,
     required this.onSubmit,
-    required this.onNameChanged,  // New required parameter
+    required this.onNameChanged,
   }) : super(key: key);
 
   @override
@@ -338,13 +338,11 @@ class CardForm extends StatefulWidget {  // Changed to StatefulWidget
 }
 
 class _CardFormState extends State<CardForm> {
-  // Add controllers for form fields
   final TextEditingController _nameController = TextEditingController();
   
   @override
   void initState() {
     super.initState();
-    // Add listener to the name controller
     _nameController.addListener(() {
       widget.onNameChanged(_nameController.text);
     });
@@ -352,111 +350,114 @@ class _CardFormState extends State<CardForm> {
   
   @override
   void dispose() {
-    // Clean up controller when widget is disposed
     _nameController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        // Main form content
-        SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextFormField(
-                controller: _nameController,  // Use the controller
-                decoration: const InputDecoration(
-                  hintText: 'Name ',
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Stack(
+        children: [
+          // Main form content
+          SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextFormField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(
+                    hintText: 'Name ',
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                decoration: const InputDecoration(
-                  hintText: 'Card Number',
+                const SizedBox(height: 16),
+                TextFormField(
+                  decoration: const InputDecoration(
+                    hintText: 'Card Number',
+                  ),
+                  keyboardType: TextInputType.number,
                 ),
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      decoration: const InputDecoration(
-                        hintText: 'Month',
-                      ),
-                      items: List.generate(
-                        12,
-                        (index) => DropdownMenuItem(
-                          value: (index + 1).toString().padLeft(2, '0'),
-                          child: Text((index + 1).toString().padLeft(2, '0')),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        decoration: const InputDecoration(
+                          hintText: 'Month',
                         ),
-                      ),
-                      onChanged: (value) {},
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      decoration: const InputDecoration(
-                        hintText: 'Year',
-                      ),
-                      items: List.generate(
-                        10,
-                        (index) => DropdownMenuItem(
-                          value: (DateTime.now().year + index).toString(),
-                          child: Text((DateTime.now().year + index).toString()),
+                        items: List.generate(
+                          12,
+                          (index) => DropdownMenuItem(
+                            value: (index + 1).toString().padLeft(2, '0'),
+                            child: Text((index + 1).toString().padLeft(2, '0')),
+                          ),
                         ),
+                        onChanged: (value) {},
                       ),
-                      onChanged: (value) {},
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                decoration: const InputDecoration(
-                  hintText: 'CVV',
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        decoration: const InputDecoration(
+                          hintText: 'Year',
+                        ),
+                        items: List.generate(
+                          10,
+                          (index) => DropdownMenuItem(
+                            value: (DateTime.now().year + index).toString(),
+                            child: Text((DateTime.now().year + index).toString()),
+                          ),
+                        ),
+                        onChanged: (value) {},
+                      ),
+                    ),
+                  ],
                 ),
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Switch(
-                    value: true,
-                    onChanged: (value) {},
-                    activeColor: AppTheme.primaryColor,
+                const SizedBox(height: 16),
+                TextFormField(
+                  decoration: const InputDecoration(
+                    hintText: 'CVV',
                   ),
-                  const Text('Set as default', style: AppTheme.bodyStyle),
-                ],
-              ),
-              // Add extra space at the bottom to prevent the form elements from being hidden behind the button
-              const SizedBox(height: 80),
-            ],
-          ),
-        ),
-        
-        // Positioned button at the bottom center
-        Positioned(
-          bottom: 20,
-          left: 0,
-          right: 0,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: ElevatedButton(
-              onPressed: widget.onSubmit,
-              child: const Text('Review Payment'),
+                  keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Switch(
+                      value: true,
+                      onChanged: (value) {},
+                      activeColor: AppTheme.primaryColor,
+                    ),
+                    const Text('Set as default', style: AppTheme.bodyStyle),
+                  ],
+                ),
+                // Add more space between "Set as default" and the button
+                const SizedBox(height: 50),
+              ],
             ),
           ),
-        ),
-      ],
+          
+          // Button positioned at the bottom center
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Center(
+              child: ElevatedButton(
+                onPressed: widget.onSubmit,
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(150, 48),
+                ),
+                child: const Text('Review Payment'),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
-
 // Extra class for card preview (shown in the AddCardScreen)
 class CardPreview extends StatelessWidget {
   const CardPreview({Key? key}) : super(key: key);
