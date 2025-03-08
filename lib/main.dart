@@ -339,6 +339,11 @@ class CardForm extends StatefulWidget {
 
 class _CardFormState extends State<CardForm> {
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _cardNumberController = TextEditingController();
+  final TextEditingController _cvvController = TextEditingController();
+  String? _selectedMonth;
+  String? _selectedYear;
+  bool _isDefault = true;
   
   @override
   void initState() {
@@ -351,110 +356,135 @@ class _CardFormState extends State<CardForm> {
   @override
   void dispose() {
     _nameController.dispose();
+    _cardNumberController.dispose();
+    _cvvController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Stack(
-        children: [
-          // Main form content
-          SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextFormField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(
-                    hintText: 'Name ',
-                  ),
+    // Calculate bottom padding to avoid navigation bar
+    final bottomPadding = MediaQuery.of(context).padding.bottom + 16;
+    
+    return Stack(
+      children: [
+        // Main form content
+        SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextFormField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  hintText: 'Name ',
                 ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  decoration: const InputDecoration(
-                    hintText: 'Card Number',
-                  ),
-                  keyboardType: TextInputType.number,
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: DropdownButtonFormField<String>(
-                        decoration: const InputDecoration(
-                          hintText: 'Month',
-                        ),
-                        items: List.generate(
-                          12,
-                          (index) => DropdownMenuItem(
-                            value: (index + 1).toString().padLeft(2, '0'),
-                            child: Text((index + 1).toString().padLeft(2, '0')),
-                          ),
-                        ),
-                        onChanged: (value) {},
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: DropdownButtonFormField<String>(
-                        decoration: const InputDecoration(
-                          hintText: 'Year',
-                        ),
-                        items: List.generate(
-                          10,
-                          (index) => DropdownMenuItem(
-                            value: (DateTime.now().year + index).toString(),
-                            child: Text((DateTime.now().year + index).toString()),
-                          ),
-                        ),
-                        onChanged: (value) {},
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  decoration: const InputDecoration(
-                    hintText: 'CVV',
-                  ),
-                  keyboardType: TextInputType.number,
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Switch(
-                      value: true,
-                      onChanged: (value) {},
-                      activeColor: AppTheme.primaryColor,
-                    ),
-                    const Text('Set as default', style: AppTheme.bodyStyle),
-                  ],
-                ),
-                // Add more space between "Set as default" and the button
-                const SizedBox(height: 50),
-              ],
-            ),
-          ),
-          
-          // Button positioned at the bottom center
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Center(
-              child: ElevatedButton(
-                onPressed: widget.onSubmit,
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(150, 48),
-                ),
-                child: const Text('Review Payment'),
               ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _cardNumberController,
+                decoration: const InputDecoration(
+                  hintText: 'Card Number',
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      decoration: const InputDecoration(
+                        hintText: 'Month',
+                      ),
+                      value: _selectedMonth,
+                      items: List.generate(
+                        12,
+                        (index) => DropdownMenuItem(
+                          value: (index + 1).toString().padLeft(2, '0'),
+                          child: Text((index + 1).toString().padLeft(2, '0')),
+                        ),
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedMonth = value;
+                        });
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      decoration: const InputDecoration(
+                        hintText: 'Year',
+                      ),
+                      value: _selectedYear,
+                      items: List.generate(
+                        10,
+                        (index) => DropdownMenuItem(
+                          value: (DateTime.now().year + index).toString(),
+                          child: Text((DateTime.now().year + index).toString()),
+                        ),
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedYear = value;
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _cvvController,
+                decoration: const InputDecoration(
+                  hintText: 'CVV',
+                ),
+                keyboardType: TextInputType.number,
+                maxLength: 4, // Allow for Amex cards which have 4-digit CVV
+              ),
+              const SizedBox(height: 16),
+              Column(
+                children: [
+                  Container(
+                    child: Row(
+                      children: [
+                        Switch(
+                          value: _isDefault,
+                          onChanged: (value) {
+                            setState(() {
+                              _isDefault = value;
+                            });
+                          },
+                          activeColor: AppTheme.primaryColor,
+                        ),
+                        const Text('Set as default', style: AppTheme.bodyStyle),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              // Added an additional SizedBox to create more space after the switch
+              const SizedBox(height: 80),
+              // Add extra space at the bottom to avoid navigation bar overlap
+              SizedBox(height: 60 + bottomPadding),
+            ],
+          ),
+        ),
+
+        // Button positioned at the bottom, adjusted to avoid navigation bar
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: bottomPadding,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: ElevatedButton(
+              onPressed: widget.onSubmit,
+              child: const Text('Review Payment'),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -815,6 +845,7 @@ class PaymentConfirmationScreen extends StatelessWidget {
                                   style: TextStyle(color: AppTheme.primaryColor.withOpacity(0.7)),
                                 ),
                               ),
+                              
                               ElevatedButton(
                                 onPressed: () {
                                   Navigator.pop(context); // Close dialog
